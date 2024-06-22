@@ -17,6 +17,7 @@ end)
 local SelectedQuestNPC
 local SelectedQuestNPCText = "None"
 local SelectedNPC = "None"
+local SelectedNPCName = "None"
 
 CreateButton("Select Quest NPC", "Quest Farm", function()
     for i, v in pairs(Workspace.Map.NPCs:GetChildren()) do
@@ -36,7 +37,8 @@ CreateButton("Select NPC", "Quest Farm", function()
         if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("AI") then
             if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude < 15 then
                 SelectedNPC = v.Name
-                EditString("Selected NPC: None", "Selected NPC: " .. SelectedNPC)
+                SelectedNPCName = v.Name
+                EditString("Selected NPC: None", "Selected NPC: " .. SelectedNPCName)
                 break
             end
         end
@@ -48,10 +50,10 @@ CreateToggle("Only Farm NPC", "Quest Farm", function()
     OnlyFarmNPC = not OnlyFarmNPC
 end)
 
-local QuestDistance = 4
+local QuestDistance = 7
 CreateNote("Farming Position", "Quest Farm")
-CreateTextBox("Set Distance: ", "Quest Farm", {CustomText = "Default: 4"}, function(Input)
-    QuestDistance = tonumber(Input) or 4
+CreateTextBox("Set Distance: ", "Quest Farm", {CustomText = "Default: 7"}, function(Input)
+    QuestDistance = tonumber(Input) or 7
 end)
 
 local QUnderneath = false
