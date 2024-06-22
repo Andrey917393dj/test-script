@@ -5,8 +5,8 @@ local Workspace = game.Workspace
 Start("Arctic")
 
 CreateMenu("Quest Farm")
-CreateNote("Selected Quest NPC: None", "Quest Farm")
-CreateNote("Selected NPC: None", "Quest Farm")
+local QuestNPCNote = CreateNote("Selected Quest NPC: None", "Quest Farm")
+local NPCNote = CreateNote("Selected NPC: None", "Quest Farm")
 
 CreateButton("Tutorial", "Quest Farm", function()
     CreateNotification("Arctic", "Step 1 (Quest Selection), Stand Near Quest NPC And Press 'Select Quest NPC'", {})
@@ -25,7 +25,7 @@ CreateButton("Select Quest NPC", "Quest Farm", function()
             if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude < 15 then
                 SelectedQuestNPCText = v.Head:FindFirstChild("Main").Text.Text
                 SelectedQuestNPC = v
-                EditString("Selected Quest NPC: None", "Selected Quest NPC: " .. SelectedQuestNPCText)
+                QuestNPCNote.Text = "Selected Quest NPC: " .. SelectedQuestNPCText
                 break
             end
         end
@@ -38,7 +38,7 @@ CreateButton("Select NPC", "Quest Farm", function()
             if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude < 15 then
                 SelectedNPC = v.Name
                 SelectedNPCName = v.Name
-                EditString("Selected NPC: None", "Selected NPC: " .. SelectedNPCName)
+                NPCNote.Text = "Selected NPC: " .. SelectedNPCName
                 break
             end
         end
