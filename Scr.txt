@@ -23,15 +23,15 @@ CreateButton("Select Quest NPC", "Quest Farm", function()
     for i, v in pairs(Workspace.Map.NPCs:GetChildren()) do
         if v:FindFirstChild("HumanoidRootPart") then
             if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude < 15 then
-                local mainText = v.Head:FindFirstChild("Main") and v.Head.Main:FindFirstChild("Text")
-                if mainText then
-                    SelectedQuestNPCText = mainText.Text
-                    SelectedQuestNPC = v
-                    QuestNPCNote.Text = "Selected Quest NPC: " .. SelectedQuestNPCText
-                    print("Selected Quest NPC: " .. SelectedQuestNPCText)  -- Debug print
+                -- Alternative way to determine the NPC name
+                if v:FindFirstChild("Head") and v.Head:FindFirstChild("Main") and v.Head.Main:FindFirstChild("Text") then
+                    SelectedQuestNPCText = v.Head.Main.Text.Text
                 else
-                    print("Main text not found for NPC: " .. v.Name)  -- Debug print
+                    SelectedQuestNPCText = v.Name
                 end
+                SelectedQuestNPC = v
+                QuestNPCNote.Text = "Selected Quest NPC: " .. SelectedQuestNPCText
+                print("Selected Quest NPC: " .. SelectedQuestNPCText)  -- Debug print
                 break
             end
         end
@@ -42,6 +42,7 @@ CreateButton("Select NPC", "Quest Farm", function()
     for i, v in pairs(Workspace.Living:GetChildren()) do
         if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("AI") then
             if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude < 15 then
+                -- Alternative way to determine the NPC name
                 SelectedNPC = v.Name
                 SelectedNPCName = v.Name
                 NPCNote.Text = "Selected NPC: " .. SelectedNPCName
@@ -142,4 +143,3 @@ CreateToggle("Begin Quest Farm", "Quest Farm", function()
         end
     end
 end)
-
