@@ -26,6 +26,7 @@ CreateButton("Select Quest NPC", "Quest Farm", function()
                 SelectedQuestNPCText = v.Head:FindFirstChild("Main").Text.Text
                 SelectedQuestNPC = v
                 QuestNPCNote.Text = "Selected Quest NPC: " .. SelectedQuestNPCText
+                print("Selected Quest NPC: " .. SelectedQuestNPCText)  -- Debug print
                 break
             end
         end
@@ -39,6 +40,7 @@ CreateButton("Select NPC", "Quest Farm", function()
                 SelectedNPC = v.Name
                 SelectedNPCName = v.Name
                 NPCNote.Text = "Selected NPC: " .. SelectedNPCName
+                print("Selected NPC: " .. SelectedNPCName)  -- Debug print
                 break
             end
         end
