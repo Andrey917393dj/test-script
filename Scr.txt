@@ -16,19 +16,22 @@ end)
 
 local SelectedQuestNPC
 local SelectedQuestNPCText = "None"
-local SelectedNPC = "None"
-local SelectedNPCName = "None"
+local SelectedNPC
+local SelectedNPCText = "None"
 
 CreateButton("Select Quest NPC", "Quest Farm", function()
     for i, v in pairs(Workspace.Map.NPCs:GetChildren()) do
         if v:FindFirstChild("HumanoidRootPart") then
             if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude < 15 then
-                SelectedQuestNPCText = v.Head:FindFirstChild("Main").Text.Text
                 SelectedQuestNPC = v
+                SelectedQuestNPCText = v.Head:FindFirstChild("Main").Text.Text
                 EditString("Selected Quest NPC: None", "Selected Quest NPC: " .. SelectedQuestNPCText)
                 break
             end
         end
+    end
+    if not SelectedQuestNPC then
+        CreateNotification("Arctic", "Quest NPC not found or too far away.", {})
     end
 end)
 
@@ -36,12 +39,15 @@ CreateButton("Select NPC", "Quest Farm", function()
     for i, v in pairs(Workspace.Living:GetChildren()) do
         if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("AI") then
             if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude < 15 then
-                SelectedNPC = v.Name
-                SelectedNPCName = v.Name
-                EditString("Selected NPC: None", "Selected NPC: " .. SelectedNPCName)
+                SelectedNPC = v
+                SelectedNPCText = v.Name
+                EditString("Selected NPC: None", "Selected NPC: " .. SelectedNPCText)
                 break
             end
         end
+    end
+    if not SelectedNPC then
+        CreateNotification("Arctic", "NPC to kill not found or too far away.", {})
     end
 end)
 
@@ -87,18 +93,18 @@ CreateToggle("Begin Quest Farm", "Quest Farm", function()
     StartQuestFarming = not StartQuestFarming
     
     if StartQuestFarming then
-        if (SelectedQuestNPC and SelectedNPC ~= "None") or (OnlyFarmNPC and SelectedNPC ~= "None") then
+        if (SelectedQuestNPC and SelectedNPC) or (OnlyFarmNPC and SelectedNPC) then
             while StartQuestFarming and task.wait() do
                 pcall(function()
                     for i, v in pairs(Workspace.Living:GetChildren()) do
-                        if v.Name == SelectedNPC and v.Humanoid.Health > 0 then
+                        if v.Name == SelectedNPCText and v.Humanoid.Health > 0 then
                             if not OnlyFarmNPC then
                                 TriggerQuest()
                             end
                             repeat
                                 task.wait()
                                 if UseCustomMoves == false then
-                                    for i, frame in pairs(game:GetService("Players").LocalPlayer.PlayerGui.CDgui.fortnite:GetChildren()) do
+                                    for _, frame in pairs(game:GetService("Players").LocalPlayer.PlayerGui.CDgui.fortnite:GetChildren()) do
                                         if frame:IsA("Frame") and frame.Textt.Text == "Punch" then
                                             -- Polar Was Here!
                                         else
@@ -108,7 +114,7 @@ CreateToggle("Begin Quest Farm", "Quest Farm", function()
                                 else
                                     if game.Players.LocalPlayer.Character.MoveCD.Value == false then
                                         local SelectedMove = AllMovesets[math.random(1, #AllMovesets)]
-                                        for i, move in ipairs(game.Players.LocalPlayer.Character.StandEvents:GetChildren()) do
+                                        for _, move in ipairs(game.Players.LocalPlayer.Character.StandEvents:GetChildren()) do
                                             if move.Name == SelectedMove then
                                                 move:FireServer(true)
                                             end
