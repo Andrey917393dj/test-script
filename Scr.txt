@@ -16,76 +16,30 @@ end)
 
 local SelectedQuestNPC
 local SelectedQuestNPCText = "None"
-local SelectedNPC
-local SelectedNPCText = "None"
+local SelectedNPC = "None"
+local SelectedNPCName = "None"
 
 CreateButton("Select Quest NPC", "Quest Farm", function()
     for i, v in pairs(Workspace.Map.NPCs:GetChildren()) do
         if v:FindFirstChild("HumanoidRootPart") then
             if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude < 15 then
-                SelectedQuestNPC = v
                 SelectedQuestNPCText = v.Head:FindFirstChild("Main").Text.Text
+                SelectedQuestNPC = v
                 EditString("Selected Quest NPC: None", "Selected Quest NPC: " .. SelectedQuestNPCText)
                 break
             end
         end
     end
-    if not SelectedQuestNPC then
-        CreateNotification("Arctic", "Quest NPC not found or too far away.", {})
-    end
 end)
 
 CreateButton("Select NPC", "Quest Farm", function()
     for i, v in pairs(Workspace.Living:GetChildren()) do
         if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("AI") then
             if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude < 15 then
-                SelectedNPC = v
-                SelectedNPCText = v.Name
-                EditString("Selected NPC: None", "Selected NPC: " .. SelectedNPCText)
-                break
-            end
-        end
-    end
-    if not SelectedNPC then
-        CreateNotification("Arctic", "NPC to kill not found or too far away.", {})
-    end
-end)
-
-local OnlyFarmNPC = false
-CreateToggle("Only FarCreateMenu("Quest Farm")
-CreateNote("Selected Quest NPC: None", "Quest Farm")
-CreateNote("Selected NPC: None", "Quest Farm")
-
-CreateButton("Tutorial", "Quest Farm", function()
-    CreateNotification("Arctic", "Step 1 (Quest Selection), Stand Near Quest NPC And Press 'Select Quest NPC'", {})
-    task.wait(5)
-    CreateNotification("Arctic", "Step 2 (NPC Selection), Stand Near NPC To Kill And Press 'Select NPC", {})
-end)
-
-local SelectedQuestNPC
-local SelectedQuestNPCText = "None"
-local SelectedNPC = "None"
-
-CreateButton("Select Quest NPC", "Quest Farm", function()
-    for i, v in pairs(Workspace.Map.NPCs:GetChildren()) do
-        if v:FindFirstChild("HumanoidRootPart") then
-            if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude < 15 then
-                EditString("Selected Quest NPC: "..SelectedQuestNPCText, "Selected Quest NPC: "..v.Head:FindFirstChild("Main").Text.Text)
-                
-                SelectedQuestNPC = v
-                SelectedQuestNPCText = v.Head:FindFirstChild("Main").Text.Text
-            end
-        end
-    end
-end)
-
-CreateButton("Select NPC", "Quest Farm", function()
-    for i, v in pairs(Workspace.Living:GetChildren()) do
-        if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("AI") then
-            if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude < 15 then
-                EditString("Selected NPC: "..SelectedNPC, "Selected NPC: "..v.Name)
-                
                 SelectedNPC = v.Name
+                SelectedNPCName = v.Name
+                EditString("Selected NPC: None", "Selected NPC: " .. SelectedNPCName)
+                break
             end
         end
     end
@@ -99,7 +53,7 @@ end)
 local QuestDistance = 7
 CreateNote("Farming Position", "Quest Farm")
 CreateTextBox("Set Distance: ", "Quest Farm", {CustomText = "Default: 7"}, function(Input)
-    QuestDistance = tonumber(Input)
+    QuestDistance = tonumber(Input) or 7
 end)
 
 local QUnderneath = false
@@ -108,26 +62,23 @@ CreateToggle("Underneath", "Quest Farm", function()
 end)
 
 local function TriggerQuest()
-    local QuestDone
-    local Done
-    for i, v in pairs(SelectedQuestNPC:GetChildren()) do
-        if v.Name == "QuestDone" then
-            QuestDone = v
-        elseif v.Name == "Done" then
-            Done = v
+    if SelectedQuestNPC then
+        local QuestDone = SelectedQuestNPC:FindFirstChild("QuestDone")
+        local Done = SelectedQuestNPC:FindFirstChild("Done")
+        
+        if QuestDone then
+            QuestDone:FireServer()
+        else
+            CreateNotification("Arctic", "Error Grabbing Remote 1", {})
         end
-    end
-    
-    if QuestDone then
-        QuestDone:FireServer()
+        
+        if Done then
+            Done:FireServer()
+        else
+            CreateNotification("Arctic", "Error Grabbing Remote 2", {})
+        end
     else
-        CreateNotification("Arctic", "Error Grabbing Remote 1", {})
-    end
-    
-    if Done then
-        Done:FireServer()
-    else
-        CreateNotification("Arctic", "Error Grabbing Remote 2", {})
+        CreateNotification("Arctic", "Selected Quest NPC is not set.", {})
     end
 end
 
@@ -136,49 +87,51 @@ CreateToggle("Begin Quest Farm", "Quest Farm", function()
     StartQuestFarming = not StartQuestFarming
     
     if StartQuestFarming then
-        if SelectedQuestNPC and SelectedNPC ~= "None" or OnlyFarmNPC == true and SelectedNPC ~= "None" then
+        if (SelectedQuestNPC and SelectedNPC ~= "None") or (OnlyFarmNPC and SelectedNPC ~= "None") then
             while StartQuestFarming and task.wait() do
                 pcall(function()
                     for i, v in pairs(Workspace.Living:GetChildren()) do
-                        if v.Name == SelectedNPC and v.Humanoid.Health ~= 0 then
-                            if OnlyFarmNPC == false then
+                        if v.Name == SelectedNPC and v.Humanoid.Health > 0 then
+                            if not OnlyFarmNPC then
                                 TriggerQuest()
                             end
                             repeat
                                 task.wait()
-                                game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, 0, QuestDistance)
-                                game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+                                
+                                -- Ensure Stand is following the player
+                                if game.Players.LocalPlayer.Character:FindFirstChild("Stand") and game.Players.LocalPlayer.Character:FindFirstChild("Stand"):FindFirstChild("HumanoidRootPart") then
+                                    game.Players.LocalPlayer.Character.Stand:FindFirstChild("HumanoidRootPart").CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+                                end
+
+                                -- Move player to target NPC position
+                                if QUnderneath then
+                                    local npcCFrame = v.HumanoidRootPart.CFrame
+                                    local newCFrame = CFrame.new(npcCFrame.Position - Vector3.new(0, QuestDistance, 0), npcCFrame.Position)
+                                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = newCFrame
+                                else
+                                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, 0, QuestDistance)
+                                end
+                                game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+
+                                -- Summon Stand if not already summoned
+                                if game.Players.LocalPlayer.Character:FindFirstChild("Aura").Value == false then
+                                    game.Players.LocalPlayer.Character.StandEvents.Summon:FireServer()
+                                end
+
+                                -- Attack the NPC
                                 game:GetService("Players").LocalPlayer.Character.StandEvents.M1:FireServer()
-                            until v.Humanoid.Health == 0 or StartQuestFarming == false
+
+                            until v.Humanoid.Health == 0 or not StartQuestFarming
                             
-                            if OnlyFarmNPC == false then
+                            if not OnlyFarmNPC then
                                 TriggerQuest()
                             end
-                            game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 0, 1000))
-                            game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 10, 0))
                         end
                     end
                 end)
             end
-        elseCreateNotification("Arctic", "You Are Missing A Step! Please Check Tutorial Then Re-Enable!")
-        end
-    end
-end)
-
-CreateButton("Look At NPC", "Quest Farm", function()
-    if SelectedNPC and SelectedNPC ~= "None" then
-        local NPC = Workspace.Living:FindFirstChild(SelectedNPC)
-        if NPC then
-            game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = NPC.HumanoidRootPart.CFrame
-        end
-    end
-end)
-
-CreateButton("Go Underneath NPC", "Quest Farm", function()
-    if SelectedNPC and SelectedNPC ~= "None" then
-        local NPC = Workspace.Living:FindFirstChild(SelectedNPC)
-        if NPC then
-            game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = NPC.HumanoidRootPart.CFrame * CFrame.new(0, -6, 0)
+        else
+            CreateNotification("Arctic", "You Are Missing A Step! Please Check Tutorial Then Re-Enable!")
         end
     end
 end)
